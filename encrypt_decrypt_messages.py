@@ -1,13 +1,15 @@
 import math
 import random, sys, os, prime, cryptomath
+#version 3.9.4
 
 
-
-
+#sifre korunmasi degisecek, 
 print("Creat an account")
 currentUser = input("Enter a username: ")
 password = input("Enter a password: ")
-users = [[currentUser, password]]
+if not os.path.exists(currentUser+"Inbox"):
+    os.mkdir(currentUser+"Inbox")
+users = [[currentUser, password]]#userlarin hepsini tutmuyor
 with open("users.txt", "a+") as txt_file:
     for line in users:
         txt_file.write(" ".join(line) + "\n")
@@ -65,13 +67,18 @@ def makeKeyFiles(name, keySize):
 
     print()
     
-    #kullanici dosyasinda keyleri array olarak kaydet
+    #kullanici dosyasinda kendi keylerini array olarak kaydet
     keys = [[keySize, privateKey[0], privateKey[1]], [keySize, publicKey[0], publicKey[1]]]
     with open(currentUser+".txt", "a+") as txt_file:
         for line in keys:
-            txt_file.write("".join(str(line)) + "\n")
-        txt_file.close()
-    #diger kullanicilarin public keylerini al
+            if line==keys[0]:       
+                txt_file.write("".join(str(line))+"\n")#kendi public /private keyini yazdiriyor
+            else:
+                txt_file.write("".join(str(line)))
+
+        txt_file.close()#burada sikinti yok
+    
+    #userlari listele
     userList = []
     with open('users.txt') as my_file:
         for line in my_file:
@@ -80,21 +87,36 @@ def makeKeyFiles(name, keySize):
     
     userNamesOnly = userList[::2]
 
-
-    #Public key exchange with other users
+    #**********************************************************************************************************************************
+    #Public key exchange with other users(ayni satira yaziyor)
     a=0
     while a<len(userNamesOnly):
     
         with open(userNamesOnly[a]+".txt", "a+") as txt_file:
+            
             if currentUser != userNamesOnly[a]:
-                txt_file.write(currentUser + str([keySize, publicKey[0], publicKey[1]]))
+                #txt_file.seek(0)
+                #data = txt_file.read()
+                #if len(data) > 0:
+                 #   txt_file.write("\n")
+                #if txt_file.seek(txt_file.tell() - 1, os.SEEK_SET) == "\n":
+                 #       txt_file.truncate
+                txt_file.write("\n"+currentUser + str([keySize, publicKey[0], publicKey[1]]))#
                 txt_file.close()
                 with open(userNamesOnly[a]+".txt", "r+") as txt_file:    
                     k = txt_file.readlines()
+                    txt_file.close()
                 with open(currentUser+".txt", "a+") as txt_file:
-                    txt_file.write(userNamesOnly[a] + k[1])
+                    #txt_file.seek(0)
+                    #data = txt_file.read()
+                    #if len(data) > 0:
+                    #    txt_file.write("\n")
+                    #if txt_file.seek(txt_file.tell() - 1, os.SEEK_SET) == "\n":
+                     #   txt_file.truncate
+                    txt_file.write("\n"+userNamesOnly[a] + k[1])
+                    txt_file.close()
         a +=1
-                
-
+    #Public key exchange hatasini duzelt(\n eklememesi gerekiyor)            
+    #**********************************************************************************************************************************
 if __name__ == '__main__':
     main()
