@@ -8,72 +8,91 @@ SYMBOLS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890 */(),?
 #Server'dan client'a gönderilecek.
 #Mesaj gönderilecek mi okunacak mı, bunun için de input gerekir.
 
+userName=""
+password=""
+def login():
+    print("-Login to your account-")
+    global userName
+    global password
+    userName = input("Enter your username: ")
+    password = input("Enter your password: ")
+    with open ("users.txt") as f:
+        if userName and password in f.read():
+            print("Login Successfull! Welcome " + userName )
+            chooseAction()
+        else:
+            print("Wrong username or password!!")
+            
 
 def main():
 
-    print("-Login to your account-")
-    userName = input("Enter your username: ")
-    password = input("Enter your password: ")
-    
-    
-    with open ("users.txt") as f:
-        if userName and password in f.read():
-            print("Login Successfull!")
-        else:
-            print("Wrong username or password!!")
-            main()
+    login()
 
     
+
+def chooseAction():
     print("Please choose one: write or read a message")
     action = input()
 
     if action == 'write':
-        print("To whom do you want to send the message? Please write as username.")
-        toWhom = input()
-        messageFile = "C:/Users/ihsan/Desktop/withLogin/"+toWhom+"Inbox"+"/"+userName+"smessage.txt" #Directory yi kendine gore ayarla
-        print("Please type your message...")
-        messageToBeSent = userName+" s message: "+input()
-        
-        #toWhom icin string olarak alicinin public keyini yolla
-        with open(userName+".txt","r") as userTxt:
-            lines = userTxt.readlines()
-            userTxt.close()
-        for x in range(len(lines)):
-            if toWhom in lines[x]:
-                receiverPK=lines[x]
-        
-        receiverPublicKey=receiverPK.split(toWhom+"[",1)[1]        
-        receiverPublicKey= receiverPublicKey[:-1]#alicinin public keyi saf hali
-        encryptMessage = writeToFile (messageFile, receiverPublicKey, messageToBeSent)
-        print("You can see your message's encrypted version in message.txt file.")
+        sendMessage()
 
     elif action == 'read':
-        #print("From whom do you have a message? Please write as username.")
+        readMessage()
+
+def sendMessage():
+    print("To whom do you want to send the message? Please write as username.")
+    toWhom = input()
+    messageFile = "C:/Users/ihsan/Desktop/CentralizedSecureInstantMessaging-main/CentralizedSecureInstantMessaging-main/"+toWhom+"Inbox"+"/"+userName+"smessage.txt" #Directory yi kendine gore ayarla
+    print("Please type your message...")
+    messageToBeSent = userName+" s message: "+input()
+        
+        #toWhom icin string olarak alicinin public keyini yolla
+    with open(userName+".txt","r") as userTxt:
+        lines = userTxt.readlines()
+        userTxt.close()
+    for x in range(len(lines)):
+        if toWhom in lines[x]:
+            receiverPK=lines[x]
+        
+    receiverPublicKey=receiverPK.split(toWhom+"[",1)[1]        
+    receiverPublicKey= receiverPublicKey[:-1]#alicinin public keyi saf hali
+    encryptMessage = writeToFile (messageFile, receiverPublicKey, messageToBeSent)
+    print("You can see your message's encrypted version in message.txt file.")
+    k = input("Press k to continue: ")
+    if k == 'k':
+        chooseAction()
+
+def readMessage():
+    #print("From whom do you have a message? Please write as username.")
         #fromWhom = input()
 
         #burasi read
-        with open(userName+".txt") as userTxt:
-            lines = userTxt.readlines()
-            userTxt.close()
-        receiverPrivateKey=lines[0]
+    with open(userName+".txt") as userTxt:
+        lines = userTxt.readlines()
+        userTxt.close()
+    receiverPrivateKey=lines[0]
         
-        receiverPrivateKey=receiverPrivateKey[1:]    
-        receiverPrivateKey=receiverPrivateKey[:-2]
+    receiverPrivateKey=receiverPrivateKey[1:]    
+    receiverPrivateKey=receiverPrivateKey[:-2]
        
         #klasorun icinde kimlerden mesaj geldigini goster.
 
-        inbox = os.listdir("C:/Users/ihsan/Desktop/withLogin/"+userName+"Inbox")#Directoryi kendine gore ayarla
+    inbox = os.listdir("C:/Users/ihsan/Desktop/CentralizedSecureInstantMessaging-main/CentralizedSecureInstantMessaging-main/"+userName+"Inbox")#Directoryi kendine gore ayarla
 
         #for file in glob.glob("C:/Users/ihsan/Desktop/withLogin/"+userName+"Inbox/*.txt"):
          #   inbox.append(file)
         
-        print("You have messages from: \n" , inbox)
-        print("Whose message would you like to read?")
-        sender = input()
+    print("You have messages from: \n" , inbox)
+    print("Whose message would you like to read?")
+    sender = input()
 
-        print("Your message is: ")
-        decryptMessage = readFromFile ("C:/Users/ihsan/Desktop/withLogin/"+userName+"Inbox"+"/"+sender+"smessage.txt", receiverPrivateKey)#Directoryi kendine gore ayarla
-        print(decryptMessage)
+    print("Your message is: ")
+    decryptMessage = readFromFile ("C:/Users/ihsan/Desktop/CentralizedSecureInstantMessaging-main/CentralizedSecureInstantMessaging-main/"+userName+"Inbox"+"/"+sender+"smessage.txt", receiverPrivateKey)#Directoryi kendine gore ayarla
+    print(decryptMessage)
+    k = input('Press k to continue...')
+    if k == 'k':
+        chooseAction()
 
 def getBlocksFromText(messageToBeSent, blockSize):
     # Converts a string message to a list of block integers.
