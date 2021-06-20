@@ -2,21 +2,28 @@ import math
 import random, sys, os, prime, cryptomath
 #version 3.9.4
 
+currentUser=""
 
-#sifre korunmasi degisecek, 
-print("Creat an account")
-currentUser = input("Enter a username: ")
-password = input("Enter a password: ")
-if not os.path.exists(currentUser+"Inbox"):
-    os.mkdir(currentUser+"Inbox")
-users = [[currentUser, password]]#userlarin hepsini tutmuyor
-with open("users.txt", "a+") as txt_file:
-    for line in users:
-        txt_file.write(" ".join(line) + "\n")
+def createAccount():
 
-print("Account created successfully")
+    print("Creat an account")
+    global currentUser
+    currentUser = input("Enter a username: ")
+    with open("users.txt") as users:
+        if currentUser in users.read():
+            print("Username in use!")
+            createAccount()
+    password = input("Enter a password: ")
+    if not os.path.exists(currentUser+"Inbox"):
+        os.mkdir(currentUser+"Inbox")
+    users = [[currentUser, password]]#userlarin hepsini tutmuyor
+    with open("users.txt", "a+") as txt_file:
+        for line in users:
+            txt_file.write(" ".join(line) + "\n")
+    print("Account created successfully")
 
 def main():
+    createAccount()
     if (currentUser == 'server'):
         print("The server file is already created.")
     else:
@@ -95,26 +102,21 @@ def makeKeyFiles(name, keySize):
         with open(userNamesOnly[a]+".txt", "a+") as txt_file:
             
             if currentUser != userNamesOnly[a]:
-                #txt_file.seek(0)
-                #data = txt_file.read()
-                #if len(data) > 0:
-                 #   txt_file.write("\n")
-                #if txt_file.seek(txt_file.tell() - 1, os.SEEK_SET) == "\n":
-                 #       txt_file.truncate
+                
                 txt_file.write("\n"+currentUser + str([keySize, publicKey[0], publicKey[1]]))#
                 txt_file.close()
                 with open(userNamesOnly[a]+".txt", "r+") as txt_file:    
                     k = txt_file.readlines()
                     txt_file.close()
-                with open(currentUser+".txt", "a+") as txt_file:
-                    #txt_file.seek(0)
-                    #data = txt_file.read()
-                    #if len(data) > 0:
-                    #    txt_file.write("\n")
-                    #if txt_file.seek(txt_file.tell() - 1, os.SEEK_SET) == "\n":
-                     #   txt_file.truncate
-                    txt_file.write("\n"+userNamesOnly[a] + k[1])
+                with open(currentUser+".txt", "a") as txt_file:
+                    orj = str(k[1])
+                    s=orj.rstrip(orj[-1])
+                    txt_file.write("\n"+userNamesOnly[a] + s)#yeni satiri burada ekliyor
+                    #txt_file.seek(-1,os.SEEK_END)
+                    #txt_file.truncate()
                     txt_file.close()
+                
+        
         a +=1
     #Public key exchange hatasini duzelt(\n eklememesi gerekiyor)            
     #**********************************************************************************************************************************

@@ -1,8 +1,11 @@
 import sys, math, re
 import os
 import glob
+from datetime import datetime
 
-SYMBOLS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890 */(),?;.:'
+#timestamp done
+
+SYMBOLS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890 \'*/(),?;.:'
 #mesajın kime gönderilip kimden alınacağına dair input girilmesi gerekir.
 #Mesaj önce server'a gönderilecek.
 #Server'dan client'a gönderilecek.
@@ -17,18 +20,16 @@ def login():
     userName = input("Enter your username: ")
     password = input("Enter your password: ")
     with open ("users.txt") as f:
-        if userName and password in f.read():
+        if userName+" "+ password in f.read():#password fixed
             print("Login Successfull! Welcome " + userName )
             chooseAction()
         else:
             print("Wrong username or password!!")
+            login()
             
-
 def main():
 
     login()
-
-    
 
 def chooseAction():
     print("Please choose one: write or read a message")
@@ -40,12 +41,21 @@ def chooseAction():
     elif action == 'read':
         readMessage()
 
+
+#inbox txt fix
 def sendMessage():
     print("To whom do you want to send the message? Please write as username.")
     toWhom = input()
+    with open("users.txt") as users:
+        if toWhom not in users.read():
+            print("There is no such user...")
+            sendMessage()
     messageFile = "C:/Users/ihsan/Desktop/CentralizedSecureInstantMessaging-main/CentralizedSecureInstantMessaging-main/"+toWhom+"Inbox"+"/"+userName+"smessage.txt" #Directory yi kendine gore ayarla
     print("Please type your message...")
-    messageToBeSent = userName+" s message: "+input()
+    #timestamp
+    now = datetime.now()
+    timestamp = datetime.time(now)
+    messageToBeSent = userName+"'s message at "+str(timestamp)+": "+input()
         
         #toWhom icin string olarak alicinin public keyini yolla
     with open(userName+".txt","r") as userTxt:
@@ -58,7 +68,7 @@ def sendMessage():
     receiverPublicKey=receiverPK.split(toWhom+"[",1)[1]        
     receiverPublicKey= receiverPublicKey[:-1]#alicinin public keyi saf hali
     encryptMessage = writeToFile (messageFile, receiverPublicKey, messageToBeSent)
-    print("You can see your message's encrypted version in message.txt file.")
+    #print("You can see your message's encrypted version in message.txt file.")
     k = input("Press k to continue: ")
     if k == 'k':
         chooseAction()
@@ -81,18 +91,24 @@ def readMessage():
     inbox = os.listdir("C:/Users/ihsan/Desktop/CentralizedSecureInstantMessaging-main/CentralizedSecureInstantMessaging-main/"+userName+"Inbox")#Directoryi kendine gore ayarla
 
         #for file in glob.glob("C:/Users/ihsan/Desktop/withLogin/"+userName+"Inbox/*.txt"):
-         #   inbox.append(file)
-        
-    print("You have messages from: \n" , inbox)
-    print("Whose message would you like to read?")
-    sender = input()
-
-    print("Your message is: ")
-    decryptMessage = readFromFile ("C:/Users/ihsan/Desktop/CentralizedSecureInstantMessaging-main/CentralizedSecureInstantMessaging-main/"+userName+"Inbox"+"/"+sender+"smessage.txt", receiverPrivateKey)#Directoryi kendine gore ayarla
-    print(decryptMessage)
-    k = input('Press k to continue...')
-    if k == 'k':
+        #   inbox.append(file)
+    if len(inbox) == 0:
+        input("You have no messages...")
         chooseAction()
+    else:        
+        print("You have messages from: \n" , inbox)
+        sender = input("Whose message would you like to read?")
+        exists = os.path.isfile("C:/Users/ihsan/Desktop/CentralizedSecureInstantMessaging-main/CentralizedSecureInstantMessaging-main/"+userName+"Inbox"+"/"+sender+"smessage.txt")
+        if exists:
+            decryptMessage = readFromFile ("C:/Users/ihsan/Desktop/CentralizedSecureInstantMessaging-main/CentralizedSecureInstantMessaging-main/"+userName+"Inbox"+"/"+sender+"smessage.txt", receiverPrivateKey)#Directoryi kendine gore ayarla
+        else:
+            print("You don't have a message from that user...Type correctly...")
+            readMessage()
+
+        print(decryptMessage)
+        k = input('Press k to continue...')
+        if k == 'k':
+            chooseAction()
 
 def getBlocksFromText(messageToBeSent, blockSize):
     # Converts a string message to a list of block integers.
